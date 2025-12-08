@@ -1,0 +1,146 @@
+/* PaymentHistorySection Component Styles */
+
+.payment-history-section {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.history-item {
+  background-color: #f8fafc;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.history-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-category {
+  font-size: 16px;
+  font-weight: 400;
+  color: #314158;
+  letter-spacing: -0.0125em;
+}
+
+.history-amount {
+  font-size: 16px;
+  font-weight: 400;
+  color: #0f172b;
+  letter-spacing: -0.0125em;
+}
+
+.history-description {
+  font-size: 16px;
+  font-weight: 400;
+  color: #45556c;
+  letter-spacing: -0.0125em;
+  margin: 0;
+}
+
+.history-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.history-user {
+  display: inline-block;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 16px;
+  font-weight: 400;
+  color: #314158;
+  letter-spacing: -0.0125em;
+}
+
+.history-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #62748e;
+}
+
+.date-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.history-date span {
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: -0.0125em;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  transition: background-color 0.2s;
+}
+
+.delete-button:hover {
+  background-color: #f1f5f9;
+}
+
+.delete-icon {
+  width: 20px;
+  height: 20px;
+  color: #94a3b8;
+}
+
+.show-all-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.show-all-button:hover {
+  background-color: #f8fafc;
+}
+
+.chevron-icon {
+  width: 16px;
+  height: 16px;
+  color: #45556c;
+  transition: transform 0.2s;
+}
+
+.show-all-button span {
+  font-size: 16px;
+  font-weight: 400;
+  color: #45556c;
+  letter-spacing: -0.0125em;
+}
+

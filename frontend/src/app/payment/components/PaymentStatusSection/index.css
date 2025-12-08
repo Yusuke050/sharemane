@@ -1,0 +1,114 @@
+/* PaymentStatusSection Component Styles */
+
+.payment-status-section {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 400;
+  color: #314158;
+  letter-spacing: -0.0125em;
+  margin-bottom: 16px;
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.member-card {
+  background-color: #f8fafc;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.member-name {
+  font-size: 16px;
+  font-weight: 400;
+  color: #314158;
+  letter-spacing: -0.0125em;
+}
+
+.member-total {
+  font-size: 16px;
+  font-weight: 400;
+  color: #0f172b;
+  letter-spacing: -0.0125em;
+}
+
+.member-balance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.balance-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.balance-icon.positive {
+  color: #155dfc;
+}
+
+.balance-icon.negative {
+  color: #62748e;
+}
+
+.balance-amount {
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: -0.0125em;
+}
+
+.balance-amount.positive {
+  color: #155dfc;
+}
+
+.balance-amount.negative {
+  color: #62748e;
+}
+
+.summary-section {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-label {
+  font-size: 16px;
+  font-weight: 400;
+  color: #45556c;
+  letter-spacing: -0.0125em;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 400;
+  color: #0f172b;
+  letter-spacing: -0.0125em;
+}
+

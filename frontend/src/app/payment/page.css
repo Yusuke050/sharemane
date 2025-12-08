@@ -1,0 +1,20 @@
+/* Payment Page Styles */
+
+.payment-page {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.payment-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loading {
+  padding: 24px;
+  text-align: center;
+  color: #45556c;
+}
+

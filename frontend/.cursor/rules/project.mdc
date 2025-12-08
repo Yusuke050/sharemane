@@ -1,0 +1,7 @@
+# Warikan App - Frontend Rules
+
+## Component Structure
+コンポーネントは必ずフォルダを作成し、その中に`index.tsx`と`index.css`を配置すること
+
+## Figma Design
+Figmaのデザイン確認時は必ずMCPツール(`mcp_Figma_Desktop_get_screenshot`と`mcp_Figma_Desktop_get_design_context`)を使用すること

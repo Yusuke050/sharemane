@@ -39,14 +39,51 @@ pnpm storybook
 
 ### 技術スタック
 - Go
-- (TBD: フレームワーク、データベースなど)
+- PostgreSQL 16
+- Docker & Docker Compose
 
 ### セットアップ
+
+#### 1. データベース起動
+
+```bash
+# Docker Composeでデータベースを起動
+docker-compose up -d
+
+# 起動確認
+docker-compose ps
+
+# ログ確認
+docker-compose logs postgres
+```
+
+#### 2. 環境変数設定
+
+```bash
+cd backend
+cp .env.example .env
+# 必要に応じて.envを編集
+```
+
+#### 3. バックエンド起動
 
 ```bash
 cd backend
 go mod download
-go run main.go
+go run server.go
+```
+
+### データベース操作
+
+```bash
+# データベースに接続
+docker-compose exec postgres psql -U sharemane -d sharemane
+
+# データベース停止
+docker-compose down
+
+# データベースを完全に削除（データも削除）
+docker-compose down -v
 ```
 
 ## API仕様
