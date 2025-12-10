@@ -11,22 +11,33 @@ export async function fetchPaymentSummary(): Promise<PaymentSummary> {
 }
 
 export async function createPayment(data: {
+  paidBy: string
+  amount: string
+  category: string
+  description?: string
+  date: string
+}): Promise<{
+  id: number
   category: string
   amount: number
-  description?: string
+  description: string
   paidBy: string
   date: string
-}): Promise<void> {
+}> {
   const res = await fetch('/api/payment', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      amount: parseInt(data.amount),
+    }),
   })
   if (!res.ok) {
     throw new Error('Failed to create payment')
   }
+  return res.json()
 }
 
 export async function deletePayment(id: number): Promise<void> {

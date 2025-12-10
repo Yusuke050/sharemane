@@ -13,6 +13,7 @@ sharemane/
 ## Frontend
 
 ### 技術スタック
+
 - Next.js 16
 - React 19
 - TypeScript
@@ -38,6 +39,7 @@ pnpm storybook
 ## Backend
 
 ### 技術スタック
+
 - Go
 - PostgreSQL 16
 - Docker & Docker Compose
@@ -86,14 +88,21 @@ docker-compose down
 docker-compose down -v
 ```
 
-## API仕様
+## API 仕様
 
-API仕様書は `backend/API_SPEC.md` を参照してください。
+### バックエンド API 仕様
+
+バックエンド API の詳細仕様は `backend/API_SPEC.md` を参照してください。
+
+### フロントエンドで必要な API 一覧
+
+フロントエンドの各画面で必要な API エンドポイントの一覧は `API_REQUIREMENTS.md` を参照してください。
+
+このドキュメントには、MSW でモック実装する際に必要な API の詳細が記載されています。
 
 ## 開発ルール
 
 - コンポーネントは必ずフォルダを作成し、その中に`index.tsx`と`index.css`を配置すること
-- Figmaのデザイン確認時は必ずMCPツール(`mcp_Figma_Desktop_get_screenshot`と`mcp_Figma_Desktop_get_design_context`)を使用すること
+- Figma のデザイン確認時は必ず MCP ツール(`mcp_Figma_Desktop_get_screenshot`と`mcp_Figma_Desktop_get_design_context`)を使用すること
 
 詳細は `frontend/.cursor/rules/project.mdc` を参照してください。
-

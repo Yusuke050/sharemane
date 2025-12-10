@@ -19,12 +19,13 @@ export function CategoryExpenseChart({ expenses, totalExpense }: Props) {
     return (amount / total) * 360
   }
 
-  let currentAngle = 0
-  const paths = expenses.map((expense) => {
+  const paths = expenses.reduce<
+    Array<CategoryExpense & { pathData: string; angle: number }>
+  >((acc, expense) => {
     const angle = calculateAngle(expense.amount, totalExpense)
-    const startAngle = currentAngle
-    const endAngle = currentAngle + angle
-    currentAngle = endAngle
+    const previousAngle = acc.reduce((sum, item) => sum + item.angle, 0)
+    const startAngle = previousAngle
+    const endAngle = previousAngle + angle
 
     const startX =
       50 + 50 * Math.cos(((startAngle - 90) * Math.PI) / 180)
@@ -42,8 +43,8 @@ export function CategoryExpenseChart({ expenses, totalExpense }: Props) {
       `Z`,
     ].join(' ')
 
-    return { ...expense, pathData, angle }
-  })
+    return [...acc, { ...expense, pathData, angle }]
+  }, [])
 
   return (
     <div className="category-expense-chart">

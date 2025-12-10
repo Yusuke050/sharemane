@@ -14,11 +14,13 @@ type RecurringPayment = {
 type Props = {
   payments: RecurringPayment[]
   onAddClick: () => void
+  onDelete?: (id: number) => void
 }
 
 export function RecurringPaymentManagement({
   payments,
   onAddClick,
+  onDelete,
 }: Props) {
   return (
     <div className="recurring-payment-management">
@@ -49,8 +51,37 @@ export function RecurringPaymentManagement({
         <div className="payments-list">
           {payments.map((payment) => (
             <div key={payment.id} className="payment-item">
-              {/* TODO: 定期支払いアイテムの表示を実装 */}
-              <p>{payment.paidBy} - ¥{payment.amount}</p>
+              <div className="payment-info">
+                <span className="payment-paid-by">{payment.paidBy}</span>
+                <span className="payment-amount">¥{payment.amount.toLocaleString()}</span>
+                <span className="payment-category">{payment.category}</span>
+                <span className="payment-frequency">
+                  {payment.frequency === 'weekly' ? '毎週' : '毎月'}
+                </span>
+                {payment.memo && <span className="payment-memo">{payment.memo}</span>}
+              </div>
+              {onDelete && (
+                <button
+                  className="payment-delete-button"
+                  onClick={() => onDelete(payment.id)}
+                  aria-label={`定期支払いを削除`}
+                >
+                  <svg
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="delete-icon"
+                  >
+                    <path
+                      d="M12 4L4 12M4 4L12 12"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              )}
             </div>
           ))}
         </div>

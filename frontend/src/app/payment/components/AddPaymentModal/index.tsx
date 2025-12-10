@@ -20,6 +20,7 @@ export type PaymentFormData = {
   amount: string
   category: string
   memo: string
+  date: string
 }
 
 export function AddPaymentModal({
@@ -33,11 +34,16 @@ export function AddPaymentModal({
   onSubmit?: (data: PaymentFormData) => void
   members?: string[]
 }) {
+  const getTodayDate = () => {
+    return new Date().toISOString().split('T')[0]
+  }
+
   const [formData, setFormData] = useState<PaymentFormData>({
     paidBy: members[0] || '',
     amount: '',
     category: '',
     memo: '',
+    date: getTodayDate(),
   })
 
   if (!isOpen) return null
@@ -51,6 +57,7 @@ export function AddPaymentModal({
         amount: '',
         category: '',
         memo: '',
+        date: getTodayDate(),
       })
       onClose()
     }

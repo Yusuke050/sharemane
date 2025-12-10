@@ -1,8 +1,30 @@
-# Payment API 仕様書
+# API 仕様書
 
 ## 概要
 
-共同家計簿アプリの支払い管理機能を提供する REST API です。
+共同家計簿アプリの REST API 仕様です。
+
+## 共通仕様
+
+### エラーレスポンス形式
+
+すべてのエラーレスポンスは以下の形式で返されます：
+
+```json
+{
+  "error": "エラータイプ",
+  "message": "詳細なエラーメッセージ"
+}
+```
+
+### HTTP ステータスコード
+
+- `200 OK`: リクエスト成功
+- `201 Created`: リソース作成成功
+- `204 No Content`: リソース削除成功
+- `400 Bad Request`: バリデーションエラー
+- `404 Not Found`: リソースが見つからない
+- `500 Internal Server Error`: サーバーエラー
 
 ## ベース URL
 
@@ -109,21 +131,21 @@ Content-Type: application/json
 
 ```json
 {
-  "category": "食費",
-  "amount": 5000,
-  "description": "スーパーで買い物",
   "paidBy": "太郎",
-  "date": "12/2"
+  "amount": 5000,
+  "category": "食費",
+  "description": "スーパーで買い物",
+  "date": "2024-12-02"
 }
 ```
 
 **フィールド説明:**
 
-- `category`: カテゴリ（文字列、必須、1 文字以上）
-- `amount`: 金額（整数、必須、1 以上）
-- `description`: 説明（文字列、オプション、空文字列可）
 - `paidBy`: 支払った人の名前（文字列、必須、1 文字以上）
-- `date`: 日付（文字列、必須、形式: "MM/DD"）
+- `amount`: 金額（整数、必須、1 以上）
+- `category`: カテゴリ（文字列、必須、1 文字以上）
+- `description`: 説明（文字列、オプション、空文字列可）
+- `date`: 日付（文字列、必須、形式: "YYYY-MM-DD"）
 
 **レスポンス**
 
@@ -202,146 +224,478 @@ Content-Type: application/json
 
 ---
 
-## データモデル
+## 2. メンバー管理
 
-### Payment（支払い）
+### 2.1 メンバー一覧取得
 
-```go
-type Payment struct {
-    ID          int    `json:"id" db:"id"`
-    Category    string `json:"category" db:"category"`
-    Amount      int    `json:"amount" db:"amount"`
-    Description string `json:"description" db:"description"`
-    PaidBy      string `json:"paidBy" db:"paid_by"`
-    Date        string `json:"date" db:"date"`
-    CreatedAt   time.Time `json:"createdAt" db:"created_at"`
-    UpdatedAt   time.Time `json:"updatedAt" db:"updated_at"`
+登録されているメンバー一覧を取得します。
+
+**エンドポイント:** `GET /members`
+
+**レスポンス**
+
+- **ステータスコード:** `200 OK`
+- **Content-Type:** `application/json`
+
+**レスポンスボディ:**
+
+```json
+{
+  "members": [
+    {
+      "id": 1,
+      "name": "太郎"
+    },
+    {
+      "id": 2,
+      "name": "花子"
+    }
+  ]
 }
 ```
 
-### User（ユーザー）
+**フィールド説明:**
 
-```go
-type User struct {
-    ID   int    `json:"userId" db:"id"`
-    Name string `json:"userName" db:"name"`
-}
-```
+- `members`: メンバー一覧の配列
+  - `id`: メンバー ID（整数）
+  - `name`: メンバー名（文字列）
 
-### PaymentSummary（支払いサマリー）
+**エラーレスポンス:**
 
-```go
-type PaymentSummary struct {
-    Members     []PaymentStatus `json:"members"`
-    TotalExpense int            `json:"totalExpense"`
-    PerPerson    int            `json:"perPerson"`
-    History      []Payment      `json:"history"`
-}
-
-type PaymentStatus struct {
-    UserID    int    `json:"userId"`
-    UserName  string `json:"userName"`
-    TotalPaid int    `json:"totalPaid"`
-    Balance   int    `json:"balance"`
-}
-```
+- `500 Internal Server Error`: サーバーエラー
 
 ---
 
-## データベーススキーマ
+### 2.2 メンバー追加
 
-### payments テーブル
+新しいメンバーを追加します。
 
-```sql
-CREATE TABLE payments (
-    id SERIAL PRIMARY KEY,
-    category VARCHAR(255) NOT NULL,
-    amount INTEGER NOT NULL CHECK (amount > 0),
-    description TEXT DEFAULT '',
-    paid_by VARCHAR(255) NOT NULL,
-    date VARCHAR(10) NOT NULL, -- 形式: "MM/DD"
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+**エンドポイント:** `POST /members`
 
-CREATE INDEX idx_payments_date ON payments(date);
-CREATE INDEX idx_payments_paid_by ON payments(paid_by);
+**リクエストヘッダー:**
+
+```
+Content-Type: application/json
 ```
 
-### users テーブル
+**リクエストボディ:**
 
-```sql
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
----
-
-## 実装の注意点
-
-1. **日付形式**: `date`フィールドは文字列形式（"MM/DD"）で保存・返却します
-2. **金額計算**: すべての金額は整数（単位: 円）で扱います
-3. **バリデーション**:
-   - `amount`は 1 以上の整数である必要があります
-   - `category`と`paidBy`は空文字列不可です
-   - `date`は"MM/DD"形式である必要があります
-4. **トランザクション**: 支払いの作成・削除時は、データの整合性を保つためトランザクションを使用してください
-5. **エラーハンドリング**: 適切な HTTP ステータスコードとエラーメッセージを返してください
-
----
-
-## 実装例（Go）
-
-### エンドポイント実装の基本構造
-
-```go
-// GET /api/payment/summary
-func GetPaymentSummary(c *gin.Context) {
-    // 1. すべての支払い履歴を取得
-    // 2. すべてのユーザーを取得
-    // 3. 各ユーザーのtotalPaidを計算
-    // 4. totalExpenseとperPersonを計算
-    // 5. 各ユーザーのbalanceを計算
-    // 6. レスポンスを返す
-}
-
-// POST /api/payment
-func CreatePayment(c *gin.Context) {
-    // 1. リクエストボディをパース
-    // 2. バリデーション
-    // 3. データベースに保存
-    // 4. 保存したデータを返す
-}
-
-// DELETE /api/payment/{id}
-func DeletePayment(c *gin.Context) {
-    // 1. パスパラメータからIDを取得
-    // 2. データベースから削除
-    // 3. 204 No Contentを返す
+```json
+{
+  "name": "次郎"
 }
 ```
 
+**フィールド説明:**
+
+- `name`: メンバー名（文字列、必須、1 文字以上）
+
+**レスポンス**
+
+- **ステータスコード:** `201 Created`
+- **Content-Type:** `application/json`
+
+**レスポンスボディ:**
+
+```json
+{
+  "id": 3,
+  "name": "次郎"
+}
+```
+
+**エラーレスポンス:**
+
+- `400 Bad Request`: バリデーションエラー
+
+  - `name`が空文字列の場合
+
+- `500 Internal Server Error`: サーバーエラー
+
 ---
 
-## テストケース
+### 2.3 メンバー削除
 
-### 1. 支払いサマリー取得
+指定した ID のメンバーを削除します。
 
-- 正常系: 支払いデータが存在する場合、正しいサマリーを返す
-- 正常系: 支払いデータが存在しない場合、空の配列と 0 を返す
+**エンドポイント:** `DELETE /members/{id}`
 
-### 2. 支払い作成
+**パスパラメータ:**
 
-- 正常系: すべての必須フィールドが正しく入力されている場合、作成成功
-- 異常系: `amount`が 0 以下の場合、400 エラー
-- 異常系: `category`が空文字列の場合、400 エラー
-- 異常系: `paidBy`が空文字列の場合、400 エラー
-- 異常系: `date`が不正な形式の場合、400 エラー
+- `id`: メンバー ID（整数、必須）
 
-### 3. 支払い削除
+**レスポンス**
 
-- 正常系: 存在する ID を指定した場合、削除成功
-- 異常系: 存在しない ID を指定した場合、404 エラー
+- **ステータスコード:** `204 No Content`
+- **レスポンスボディ:** なし
+
+**エラーレスポンス:**
+
+- `404 Not Found`: 指定した ID のメンバーが存在しない
+
+```json
+{
+  "error": "Not found",
+  "message": "Member with id {id} not found"
+}
+```
+
+- `500 Internal Server Error`: サーバーエラー
+
+---
+
+## 3. カテゴリ管理
+
+### 3.1 カテゴリ一覧取得
+
+登録されているカテゴリ一覧を取得します。
+
+**エンドポイント:** `GET /categories`
+
+**レスポンス**
+
+- **ステータスコード:** `200 OK`
+- **Content-Type:** `application/json`
+
+**レスポンスボディ:**
+
+```json
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "食費"
+    },
+    {
+      "id": 2,
+      "name": "日用品"
+    }
+  ]
+}
+```
+
+**フィールド説明:**
+
+- `categories`: カテゴリ一覧の配列
+  - `id`: カテゴリ ID（整数）
+  - `name`: カテゴリ名（文字列）
+
+**エラーレスポンス:**
+
+- `500 Internal Server Error`: サーバーエラー
+
+---
+
+### 3.2 カテゴリ追加
+
+新しいカテゴリを追加します。
+
+**エンドポイント:** `POST /categories`
+
+**リクエストヘッダー:**
+
+```
+Content-Type: application/json
+```
+
+**リクエストボディ:**
+
+```json
+{
+  "name": "通信費"
+}
+```
+
+**フィールド説明:**
+
+- `name`: カテゴリ名（文字列、必須、1 文字以上）
+
+**レスポンス**
+
+- **ステータスコード:** `201 Created`
+- **Content-Type:** `application/json`
+
+**レスポンスボディ:**
+
+```json
+{
+  "id": 10,
+  "name": "通信費"
+}
+```
+
+**エラーレスポンス:**
+
+- `400 Bad Request`: バリデーションエラー
+
+  - `name`が空文字列の場合
+
+- `500 Internal Server Error`: サーバーエラー
+
+---
+
+### 3.3 カテゴリ削除
+
+指定した ID のカテゴリを削除します。
+
+**エンドポイント:** `DELETE /categories/{id}`
+
+**パスパラメータ:**
+
+- `id`: カテゴリ ID（整数、必須）
+
+**レスポンス**
+
+- **ステータスコード:** `204 No Content`
+- **レスポンスボディ:** なし
+
+**エラーレスポンス:**
+
+- `404 Not Found`: 指定した ID のカテゴリが存在しない
+
+```json
+{
+  "error": "Not found",
+  "message": "Category with id {id} not found"
+}
+```
+
+- `500 Internal Server Error`: サーバーエラー
+
+---
+
+## 4. 定期支払い管理
+
+### 4.1 定期支払い一覧取得
+
+登録されている定期支払い一覧を取得します。
+
+**エンドポイント:** `GET /recurring-payments`
+
+**レスポンス**
+
+- **ステータスコード:** `200 OK`
+- **Content-Type:** `application/json`
+
+**レスポンスボディ:**
+
+```json
+{
+  "recurringPayments": [
+    {
+      "id": 1,
+      "paidBy": "太郎",
+      "amount": 50000,
+      "category": "家賃",
+      "frequency": "monthly",
+      "memo": "家賃"
+    }
+  ]
+}
+```
+
+**フィールド説明:**
+
+- `recurringPayments`: 定期支払い一覧の配列
+  - `id`: 定期支払い ID（整数）
+  - `paidBy`: 支払う人の名前（文字列）
+  - `amount`: 金額（整数、単位: 円）
+  - `category`: カテゴリ（文字列）
+  - `frequency`: 頻度（文字列、`weekly`または`monthly`）
+  - `memo`: メモ（文字列、空文字列可）
+
+**エラーレスポンス:**
+
+- `500 Internal Server Error`: サーバーエラー
+
+---
+
+### 4.2 定期支払い追加
+
+新しい定期支払いを追加します。
+
+**エンドポイント:** `POST /recurring-payments`
+
+**リクエストヘッダー:**
+
+```
+Content-Type: application/json
+```
+
+**リクエストボディ:**
+
+```json
+{
+  "paidBy": "太郎",
+  "amount": 50000,
+  "category": "家賃",
+  "frequency": "monthly",
+  "memo": "家賃"
+}
+```
+
+**フィールド説明:**
+
+- `paidBy`: 支払う人の名前（文字列、必須、1 文字以上）
+- `amount`: 金額（整数、必須、1 以上）
+- `category`: カテゴリ（文字列、必須、1 文字以上）
+- `frequency`: 頻度（文字列、必須、`weekly`または`monthly`）
+- `memo`: メモ（文字列、オプション、空文字列可）
+
+**レスポンス**
+
+- **ステータスコード:** `201 Created`
+- **Content-Type:** `application/json`
+
+**レスポンスボディ:**
+
+```json
+{
+  "id": 1,
+  "paidBy": "太郎",
+  "amount": 50000,
+  "category": "家賃",
+  "frequency": "monthly",
+  "memo": "家賃"
+}
+```
+
+**エラーレスポンス:**
+
+- `400 Bad Request`: バリデーションエラー
+
+  - 必須フィールドが不足している場合
+  - `amount`が 1 未満の場合
+  - `frequency`が`weekly`または`monthly`以外の場合
+
+- `500 Internal Server Error`: サーバーエラー
+
+---
+
+### 4.3 定期支払い削除
+
+指定した ID の定期支払いを削除します。
+
+**エンドポイント:** `DELETE /recurring-payments/{id}`
+
+**パスパラメータ:**
+
+- `id`: 定期支払い ID（整数、必須）
+
+**レスポンス**
+
+- **ステータスコード:** `204 No Content`
+- **レスポンスボディ:** なし
+
+**エラーレスポンス:**
+
+- `404 Not Found`: 指定した ID の定期支払いが存在しない
+
+```json
+{
+  "error": "Not found",
+  "message": "Recurring payment with id {id} not found"
+}
+```
+
+- `500 Internal Server Error`: サーバーエラー
+
+---
+
+## 5. 分析データ
+
+### 5.1 分析データ取得
+
+分析データを取得します。`target`パラメータで表示対象をフィルタリングできます。
+
+**エンドポイント:** `GET /analytics/summary`
+
+**クエリパラメータ:**
+
+- `target` (string, optional): 表示対象。`all`またはメンバー名。デフォルトは`all`
+
+**レスポンス**
+
+- **ステータスコード:** `200 OK`
+- **Content-Type:** `application/json`
+
+**レスポンスボディ:**
+
+```json
+{
+  "monthlyExpense": 252503,
+  "totalExpense": 252503,
+  "categoryExpenses": [
+    {
+      "category": "家賃",
+      "amount": 250003,
+      "percentage": 99.0,
+      "color": "#475569"
+    },
+    {
+      "category": "娯楽",
+      "amount": 1500,
+      "percentage": 0.6,
+      "color": "#8b5cf6"
+    }
+  ],
+  "members": ["太郎", "花子"]
+}
+```
+
+**フィールド説明:**
+
+- `monthlyExpense`: 今月の支出額（整数、単位: 円）
+- `totalExpense`: 合計支出額（整数、単位: 円）
+- `categoryExpenses`: カテゴリ別支出の配列
+  - `category`: カテゴリ名（文字列）
+  - `amount`: 金額（整数、単位: 円）
+  - `percentage`: 全体に占める割合（数値、小数点第 1 位まで）
+  - `color`: グラフ表示用の色コード（文字列、HEX 形式）
+- `members`: メンバー名の配列（表示対象フィルタで使用）
+
+**ビジネスロジック:**
+
+1. `target`が`all`の場合: すべての支払いデータを対象
+2. `target`がメンバー名の場合: そのメンバーが支払ったデータのみを対象
+3. `totalExpense`: 対象となる支払いの`amount`の合計
+4. `monthlyExpense`: 現在月の支払いの合計（簡易実装では`totalExpense`と同じ値）
+5. `categoryExpenses`: カテゴリ別に集計し、金額の降順でソート
+6. `percentage`: `(amount / totalExpense) * 100`を小数点第 1 位まで計算
+
+**エラーレスポンス:**
+
+- `500 Internal Server Error`: サーバーエラー
+
+---
+
+## バリデーションルール
+
+### 共通ルール
+
+- すべての金額は整数（単位: 円）で、1 以上である必要があります
+- 文字列フィールドで必須のものは、空文字列不可です
+
+### 支払い作成
+
+- `paidBy`: 必須、1 文字以上
+- `amount`: 必須、1 以上の整数
+- `category`: 必須、1 文字以上
+- `description`: オプション
+- `date`: 必須、`YYYY-MM-DD`形式
+
+### メンバー追加
+
+- `name`: 必須、1 文字以上
+
+### カテゴリ追加
+
+- `name`: 必須、1 文字以上
+
+### 定期支払い追加
+
+- `paidBy`: 必須、1 文字以上
+- `amount`: 必須、1 以上の整数
+- `category`: 必須、1 文字以上
+- `frequency`: 必須、`weekly`または`monthly`のみ
+- `memo`: オプション

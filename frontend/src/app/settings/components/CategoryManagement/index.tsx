@@ -20,17 +20,17 @@ export function CategoryManagement({
       newCategoryName.trim() &&
       !categories.includes(newCategoryName.trim())
     ) {
-      setCategories([...categories, newCategoryName.trim()])
+      const updatedCategories = [...categories, newCategoryName.trim()]
+      setCategories(updatedCategories)
       setNewCategoryName('')
+      onSave?.(updatedCategories)
     }
   }
 
   const handleDeleteCategory = (index: number) => {
-    setCategories(categories.filter((_, i) => i !== index))
-  }
-
-  const handleSave = () => {
-    onSave?.(categories)
+    const updatedCategories = categories.filter((_, i) => i !== index)
+    setCategories(updatedCategories)
+    onSave?.(updatedCategories)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

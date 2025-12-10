@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SettingsTabs, SettingsTabType } from './components/SettingsTabs'
 import { MemberManagement } from './components/MemberManagement'
 import { CategoryManagement } from './components/CategoryManagement'
@@ -9,54 +9,133 @@ import {
   AddRecurringPaymentModal,
   RecurringPaymentFormData,
 } from './components/AddRecurringPaymentModal'
+import { fetchMembers, createMember, deleteMember } from '@/lib/api/members'
+import { fetchCategories, createCategory, deleteCategory } from '@/lib/api/categories'
+import {
+  fetchRecurringPayments,
+  createRecurringPayment,
+  deleteRecurringPayment,
+  type RecurringPayment,
+} from '@/lib/api/recurring-payments'
 import './page.css'
-
-const DEFAULT_CATEGORIES = [
-  '食費',
-  '日用品',
-  '交通費',
-  '娯楽',
-  '光熱費',
-  '家賃',
-  '医療',
-  'その他',
-  '交際費',
-]
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabType>('members')
   const [members, setMembers] = useState<string[]>(['太郎', '花子'])
-  const [categories, setCategories] =
-    useState<string[]>(DEFAULT_CATEGORIES)
-  const [recurringPayments, setRecurringPayments] = useState<any[]>([])
+  const [categories, setCategories] = useState<string[]>([])
+  const [recurringPayments, setRecurringPayments] = useState<
+    RecurringPayment[]
+  >([])
   const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false)
 
-  const handleSaveMembers = (newMembers: string[]) => {
-    setMembers(newMembers)
-    // TODO: API呼び出しを実装
-    console.log('メンバーを保存:', newMembers)
+  // メンバー一覧を取得
+  useEffect(() => {
+    const loadMembers = async () => {
+      try {
+        const memberList = await fetchMembers()
+        setMembers(memberList.map((m) => m.name))
+      } catch (error) {
+        console.error('Failed to load members:', error)
+      }
+    }
+    loadMembers()
+  }, [])
+
+  // カテゴリ一覧を取得
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categoryList = await fetchCategories()
+        setCategories(categoryList.map((c) => c.name))
+      } catch (error) {
+        console.error('Failed to load categories:', error)
+      }
+    }
+    loadCategories()
+  }, [])
+
+  // 定期支払い一覧を取得
+  useEffect(() => {
+    const loadRecurringPayments = async () => {
+      try {
+        const payments = await fetchRecurringPayments()
+        setRecurringPayments(payments)
+      } catch (error) {
+        console.error('Failed to load recurring payments:', error)
+      }
+    }
+    loadRecurringPayments()
+  }, [])
+
+  const handleSaveMembers = async (newMembers: string[]) => {
+    try {
+      // 既存のメンバーを取得
+      const existingMembers = await fetchMembers()
+      const existingNames = existingMembers.map((m) => m.name)
+
+      // 追加するメンバー
+      const toAdd = newMembers.filter((name) => !existingNames.includes(name))
+      for (const name of toAdd) {
+        await createMember(name)
+      }
+
+      // 削除するメンバー
+      const toDelete = existingMembers.filter(
+        (m) => !newMembers.includes(m.name)
+      )
+      for (const member of toDelete) {
+        await deleteMember(member.id)
+      }
+
+      // 再取得
+      const updatedMembers = await fetchMembers()
+      setMembers(updatedMembers.map((m) => m.name))
+    } catch (error) {
+      console.error('Failed to save members:', error)
+    }
   }
 
-  const handleSaveCategories = (newCategories: string[]) => {
-    setCategories(newCategories)
-    // TODO: API呼び出しを実装
-    console.log('カテゴリを保存:', newCategories)
+  const handleSaveCategories = async (newCategories: string[]) => {
+    try {
+      // 既存のカテゴリを取得
+      const existingCategories = await fetchCategories()
+      const existingNames = existingCategories.map((c) => c.name)
+
+      // 追加するカテゴリ
+      const toAdd = newCategories.filter((name) => !existingNames.includes(name))
+      for (const name of toAdd) {
+        await createCategory(name)
+      }
+
+      // 削除するカテゴリ
+      const toDelete = existingCategories.filter(
+        (c) => !newCategories.includes(c.name)
+      )
+      for (const category of toDelete) {
+        await deleteCategory(category.id)
+      }
+
+      // 再取得
+      const updatedCategories = await fetchCategories()
+      setCategories(updatedCategories.map((c) => c.name))
+    } catch (error) {
+      console.error('Failed to save categories:', error)
+    }
   }
 
   const handleAddRecurringPayment = () => {
     setIsRecurringModalOpen(true)
   }
 
-  const handleSaveRecurringPayment = (data: RecurringPaymentFormData) => {
-    // TODO: API呼び出しを実装
-    console.log('定期支払いを保存:', data)
-    // 仮の実装
-    const newPayment = {
-      id: Date.now(),
-      ...data,
-      amount: parseInt(data.amount),
+  const handleSaveRecurringPayment = async (data: RecurringPaymentFormData) => {
+    try {
+      await createRecurringPayment(data)
+      // 再取得
+      const payments = await fetchRecurringPayments()
+      setRecurringPayments(payments)
+    } catch (error) {
+      console.error('Failed to save recurring payment:', error)
     }
-    setRecurringPayments([...recurringPayments, newPayment])
   }
 
   return (
@@ -84,6 +163,15 @@ export default function SettingsPage() {
             <RecurringPaymentManagement
               payments={recurringPayments}
               onAddClick={handleAddRecurringPayment}
+              onDelete={async (id) => {
+                try {
+                  await deleteRecurringPayment(id)
+                  const payments = await fetchRecurringPayments()
+                  setRecurringPayments(payments)
+                } catch (error) {
+                  console.error('Failed to delete recurring payment:', error)
+                }
+              }}
             />
           </div>
         )}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { PaymentSummary } from './types'
-import { fetchPaymentSummary, deletePayment } from '@/lib/api/payment'
+import { fetchPaymentSummary, deletePayment, createPayment } from '@/lib/api/payment'
 import { PaymentStatusSection } from './components/PaymentStatusSection'
 import { AddPaymentButton } from './components/AddPaymentButton'
 import { PaymentHistorySection } from './components/PaymentHistorySection'
@@ -35,8 +35,13 @@ export default function PaymentPage() {
 
   const handlePaymentSubmit = async (formData: PaymentFormData) => {
     try {
-      // TODO: API呼び出しを実装
-      console.log('支払いを追加:', formData)
+      await createPayment({
+        paidBy: formData.paidBy,
+        amount: formData.amount,
+        category: formData.category,
+        description: formData.memo,
+        date: formData.date,
+      })
       // 追加成功後、データを再取得
       const summary = await fetchPaymentSummary()
       setData(summary)

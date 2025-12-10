@@ -14,3 +14,9 @@
   margin: 0 auto;
 }
 
+.loading {
+  padding: 24px;
+  text-align: center;
+  color: #45556c;
+}
+
