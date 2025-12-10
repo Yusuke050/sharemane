@@ -6,10 +6,12 @@ import { fetchPaymentSummary, deletePayment } from '@/lib/api/payment'
 import { PaymentStatusSection } from './components/PaymentStatusSection'
 import { AddPaymentButton } from './components/AddPaymentButton'
 import { PaymentHistorySection } from './components/PaymentHistorySection'
+import { AddPaymentModal, PaymentFormData } from './components/AddPaymentModal'
 import './page.css'
 
 export default function PaymentPage() {
   const [data, setData] = useState<PaymentSummary | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -24,9 +26,27 @@ export default function PaymentPage() {
   }, [])
 
   const handleAddPayment = () => {
-    console.log('支払いを追加')
-    // TODO: 支払い追加モーダルを開く
+    setIsModalOpen(true)
   }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false)
+  }
+
+  const handlePaymentSubmit = async (formData: PaymentFormData) => {
+    try {
+      // TODO: API呼び出しを実装
+      console.log('支払いを追加:', formData)
+      // 追加成功後、データを再取得
+      const summary = await fetchPaymentSummary()
+      setData(summary)
+    } catch (error) {
+      console.error('Failed to add payment:', error)
+    }
+  }
+
+  // メンバーリストを取得（dataから取得、またはデフォルト値）
+  const members = data?.members.map((m) => m.userName) || ['太郎', '花子']
 
   const handleDeletePayment = async (id: number) => {
     try {
@@ -63,6 +83,13 @@ export default function PaymentPage() {
           onDelete={handleDeletePayment}
         />
       </div>
+
+      <AddPaymentModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSubmit={handlePaymentSubmit}
+        members={members}
+      />
     </main>
   )
 }
