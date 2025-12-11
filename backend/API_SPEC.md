@@ -699,3 +699,26 @@ Content-Type: application/json
 - `category`: 必須、1 文字以上
 - `frequency`: 必須、`weekly`または`monthly`のみ
 - `memo`: オプション
+
+---
+
+## エンドポイント一覧
+
+| メソッド | エンドポイント                       | 説明               | ステータスコード |
+| -------- | ------------------------------------ | ------------------ | ---------------- |
+| GET      | `/payment/summary`                   | 支払いサマリー取得 | 200              |
+| POST     | `/payment`                           | 支払い作成         | 201              |
+| DELETE   | `/payment/{id}`                      | 支払い削除         | 204              |
+| GET      | `/members`                           | メンバー一覧取得   | 200              |
+| POST     | `/members`                           | メンバー追加       | 201              |
+| DELETE   | `/members/{id}`                      | メンバー削除       | 204              |
+| GET      | `/categories`                        | カテゴリ一覧取得   | 200              |
+| POST     | `/categories`                        | カテゴリ追加       | 201              |
+| DELETE   | `/categories/{id}`                   | カテゴリ削除       | 204              |
+| GET      | `/recurring-payments`                | 定期支払い一覧取得 | 200              |
+| POST     | `/recurring-payments`                | 定期支払い追加     | 201              |
+| DELETE   | `/recurring-payments/{id}`           | 定期支払い削除     | 204              |
+| GET      | `/analytics/summary?target={target}` | 分析データ取得     | 200              |
+
+**注意:** すべてのエンドポイントは `/api` プレフィックスが付きます。
+例: `GET /api/payment/summary`
