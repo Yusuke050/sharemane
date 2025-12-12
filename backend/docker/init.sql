@@ -3,7 +3,8 @@
 -- usersテーブル作成
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    mail VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -66,11 +67,11 @@ CREATE INDEX IF NOT EXISTS idx_payments_date ON payments(date);
 CREATE INDEX IF NOT EXISTS idx_payments_paid_by ON payments(paid_by);
 
 -- サンプルユーザーデータ
-INSERT INTO users (name) VALUES 
-    ('太郎'),
-    ('花子'),
-    ('次郎')
-ON CONFLICT (name) DO NOTHING;
+INSERT INTO users (name, mail) VALUES 
+    ('太郎', 'taro@example.com'),
+    ('花子', 'hanako@example.com'),
+    ('次郎', 'jiro@example.com')
+ON CONFLICT (mail) DO NOTHING;
 
 -- サンプルカテゴリデータ
 INSERT INTO categories (name) VALUES 
