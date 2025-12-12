@@ -26,13 +26,15 @@ func (r *Repository) List(ctx context.Context) ([]*domain.User, error) {
 	for rows.Next() {
 		var ID int
 		var Name string
+		var Mail string
 		var CreatedAt time.Time
-		if err := rows.Scan(&ID, &Name, &CreatedAt); err != nil {
+		if err := rows.Scan(&ID, &Name, &Mail, &CreatedAt); err != nil {
 			return nil, err
 		}
 		list = append(list, &domain.User{
 			ID:        ID,
 			Name:      Name,
+			Mail:      Mail,
 			CreatedAt: CreatedAt,
 		})
 
@@ -43,9 +45,10 @@ func (r *Repository) List(ctx context.Context) ([]*domain.User, error) {
 func (r *Repository) FindByID(ctx context.Context, id int) (*domain.User, error) {
 	var ID int
 	var Name string
+	var Mail string
 	var CreatedAt time.Time
 	err := r.db.QueryRow(ctx, "SELECT id, name, created_at FROM users WHERE id = $1", id).
-		Scan(&ID, &Name, &CreatedAt)
+		Scan(&ID, &Name, &Mail, &CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +56,7 @@ func (r *Repository) FindByID(ctx context.Context, id int) (*domain.User, error)
 	return &domain.User{
 		ID:        ID,
 		Name:      Name,
+		Mail:      Mail,
 		CreatedAt: CreatedAt,
 	}, err
 }
