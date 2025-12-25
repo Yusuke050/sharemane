@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/Yusuke050/sharemane/backend/internal/domain"
@@ -28,15 +29,32 @@ func (j *JWT) GenerateToken(user *domain.User) (string, error) {
 	return token.SignedString([]byte(j.SecretKey))
 }
 
-func (j *JWT) VerifyToken(token string) (bool, error) {
-	claims, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+func (j *JWT) VerifyToken(tokenString string) (int, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
 		return []byte(j.SecretKey), nil
 	})
+
 	if err != nil {
-		return false, err
+		return 0, err
 	}
-	if time.Unix(claims.Claims.(jwt.MapClaims)["exp"].(int64), 0).Before(time.Now()) {
-		return false, errors.New("token expired")
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return 0, errors.New("invalid token")
 	}
-	return true, nil
+
+	exp, ok := claims["exp"].(float64)
+	if !ok || time.Now().Unix() > int64(exp) {
+		return 0, errors.New("token expired")
+	}
+
+	userID, ok := claims["sub"].(float64)
+	if !ok {
+		return 0, errors.New("invalid token: missing user ID")
+	}
+
+	return int(userID), nil
 }

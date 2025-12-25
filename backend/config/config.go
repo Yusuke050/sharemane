@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -19,6 +20,10 @@ type Config struct {
 	Server struct {
 		Port int
 	}
+	Auth struct {
+		SecretKey string
+		TTL       time.Duration
+	}
 }
 
 func Load() (*Config, error) {
@@ -34,6 +39,9 @@ func Load() (*Config, error) {
 	cfg.DB.SSLMode = os.Getenv("DB_SSLMODE")
 
 	cfg.Server.Port, _ = strconv.Atoi(os.Getenv("SERVER_PORT"))
+
+	cfg.Auth.SecretKey = os.Getenv("AUTH_SECRET_KEY")
+	cfg.Auth.TTL, _ = time.ParseDuration(os.Getenv("AUTH_TTL"))
 
 	return cfg, nil
 }

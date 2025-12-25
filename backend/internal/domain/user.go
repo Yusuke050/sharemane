@@ -54,3 +54,7 @@ type UserRepository interface {
 	FindByID(ctx context.Context, id int) (*User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
 }
+
+type TokenGenerator interface {
+	GenerateToken(user *User) (string, error)
+}

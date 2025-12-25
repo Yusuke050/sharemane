@@ -8,28 +8,25 @@ import (
 )
 
 type AuthService struct {
-	repo domain.UserRepository
+	repo           domain.UserRepository
+	tokenGenerator domain.TokenGenerator
 }
 
-func NewAuthService(repo domain.UserRepository) *AuthService {
-	return &AuthService{repo}
+func NewAuthService(repo domain.UserRepository, tokenGenerator domain.TokenGenerator) *AuthService {
+	return &AuthService{repo, tokenGenerator}
 }
 
-func (s *AuthService) Login(ctx context.Context, email string, password string) (*domain.User, error) {
+func (s *AuthService) Login(ctx context.Context, email string, password string) (string, error) {
 	user, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	if !user.ComparePassword(password) {
-		return nil, fmt.Errorf("invalid password")
+		return "", fmt.Errorf("invalid password")
 	}
-	return user, nil
-}
-
-func (s *AuthService) Logout(ctx context.Context, token string) error {
-	return nil
-}
-
-func (s *AuthService) RefreshToken(ctx context.Context, token string) (string, error) {
-	return "", nil
+	token, err := s.tokenGenerator.GenerateToken(user)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
