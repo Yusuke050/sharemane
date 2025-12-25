@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     mail VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -68,9 +69,9 @@ CREATE INDEX IF NOT EXISTS idx_payments_paid_by ON payments(paid_by);
 
 -- サンプルユーザーデータ
 INSERT INTO users (name, mail) VALUES 
-    ('太郎', 'taro@example.com'),
-    ('花子', 'hanako@example.com'),
-    ('次郎', 'jiro@example.com')
+    ('太郎', 'taro@example.com', 'password'),
+    ('花子', 'hanako@example.com', 'password'),
+    ('次郎', 'jiro@example.com', 'password')
 ON CONFLICT (mail) DO NOTHING;
 
 -- サンプルカテゴリデータ

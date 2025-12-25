@@ -10,8 +10,20 @@ type UserService struct {
 	repo domain.UserRepository
 }
 
-func NewService(repo domain.UserRepository) *UserService {
+func NewUserService(repo domain.UserRepository) *UserService {
 	return &UserService{repo}
+}
+
+func (s *UserService) CreateUser(ctx context.Context, name string, email string, password string) (*domain.User, error) {
+	user, err := domain.NewUser(name, email, password)
+	if err != nil {
+		return nil, err
+	}
+	err = s.repo.Create(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 func (s *UserService) ListUsers(ctx context.Context) ([]*domain.User, error) {

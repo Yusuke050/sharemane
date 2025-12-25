@@ -94,4 +94,5 @@ func (b *Book) ValidatePayment(p *Payment) error {
 type BookRepository interface {
 	Get(ctx context.Context, id int) (*Book, error)
 	Save(ctx context.Context, book *Book) error
+	Create(ctx context.Context, book *Book) error
 }

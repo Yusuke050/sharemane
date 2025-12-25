@@ -31,7 +31,7 @@ func main() {
 	fmt.Println("Database connected successfully!")
 
 	userRepo := user.NewRepository(db.Pool)
-	userService := usecase.NewService(userRepo)
+	userService := usecase.NewUserService(userRepo)
 	userHandler := userhttp.NewUserHandler(userService)
 
 	//setting server
